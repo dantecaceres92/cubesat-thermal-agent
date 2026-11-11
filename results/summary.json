@@ -1,0 +1,577 @@
+{
+  "model": "3U CubeSat, nadir-pointing, SSO 550 km (LTDN 10:30)",
+  "beta_range_deg": [
+    17.2,
+    23.7
+  ],
+  "hot": {
+    "temperatures_c": {
+      "+X": [
+        -7.56,
+        13.5
+      ],
+      "-X": [
+        -7.97,
+        28.86
+      ],
+      "+Y": [
+        -9.74,
+        28.52
+      ],
+      "-Y": [
+        -10.16,
+        11.58
+      ],
+      "+Z": [
+        -12.38,
+        40.87
+      ],
+      "-Z": [
+        -0.89,
+        19.16
+      ],
+      "Frame": [
+        -3.16,
+        20.68
+      ],
+      "Battery": [
+        4.76,
+        17.18
+      ],
+      "Avionics": [
+        4.63,
+        23.52
+      ],
+      "Payload": [
+        2.1,
+        18.97
+      ]
+    },
+    "margins": [
+      {
+        "node": "Battery",
+        "tmin_c": 4.8,
+        "tmax_c": 17.2,
+        "op_limits_c": [
+          0,
+          45
+        ],
+        "margin_cold_c": 4.8,
+        "margin_hot_c": 27.8,
+        "status": "WATCH"
+      },
+      {
+        "node": "Avionics",
+        "tmin_c": 4.6,
+        "tmax_c": 23.5,
+        "op_limits_c": [
+          -20,
+          60
+        ],
+        "margin_cold_c": 24.6,
+        "margin_hot_c": 36.5,
+        "status": "PASS"
+      },
+      {
+        "node": "Payload",
+        "tmin_c": 2.1,
+        "tmax_c": 19.0,
+        "op_limits_c": [
+          -10,
+          40
+        ],
+        "margin_cold_c": 12.1,
+        "margin_hot_c": 21.0,
+        "status": "PASS"
+      },
+      {
+        "node": "+Y",
+        "tmin_c": -9.7,
+        "tmax_c": 28.5,
+        "op_limits_c": [
+          -100,
+          110
+        ],
+        "margin_cold_c": 90.3,
+        "margin_hot_c": 81.5,
+        "status": "PASS"
+      },
+      {
+        "node": "-Y",
+        "tmin_c": -10.2,
+        "tmax_c": 11.6,
+        "op_limits_c": [
+          -100,
+          110
+        ],
+        "margin_cold_c": 89.8,
+        "margin_hot_c": 98.4,
+        "status": "PASS"
+      },
+      {
+        "node": "+Z",
+        "tmin_c": -12.4,
+        "tmax_c": 40.9,
+        "op_limits_c": [
+          -100,
+          110
+        ],
+        "margin_cold_c": 87.6,
+        "margin_hot_c": 69.1,
+        "status": "PASS"
+      }
+    ],
+    "closure_pct": 0.0,
+    "orbits": 5
+  },
+  "cold": {
+    "temperatures_c": {
+      "+X": [
+        -35.36,
+        -19.41
+      ],
+      "-X": [
+        -35.71,
+        -7.18
+      ],
+      "+Y": [
+        -36.7,
+        -13.84
+      ],
+      "-Y": [
+        -37.06,
+        -22.7
+      ],
+      "+Z": [
+        -38.87,
+        -0.86
+      ],
+      "-Z": [
+        -31.08,
+        -17.69
+      ],
+      "Frame": [
+        -32.88,
+        -17.3
+      ],
+      "Battery": [
+        -28.3,
+        -20.14
+      ],
+      "Avionics": [
+        -28.77,
+        -16.35
+      ],
+      "Payload": [
+        -30.54,
+        -19.36
+      ]
+    },
+    "margins": [
+      {
+        "node": "Battery",
+        "tmin_c": -28.3,
+        "tmax_c": -20.1,
+        "op_limits_c": [
+          0,
+          45
+        ],
+        "margin_cold_c": -28.3,
+        "margin_hot_c": 65.1,
+        "status": "FAIL"
+      },
+      {
+        "node": "Avionics",
+        "tmin_c": -28.8,
+        "tmax_c": -16.3,
+        "op_limits_c": [
+          -20,
+          60
+        ],
+        "margin_cold_c": -8.8,
+        "margin_hot_c": 76.3,
+        "status": "FAIL"
+      },
+      {
+        "node": "Payload",
+        "tmin_c": -30.5,
+        "tmax_c": -19.4,
+        "op_limits_c": [
+          -10,
+          40
+        ],
+        "margin_cold_c": -20.5,
+        "margin_hot_c": 59.4,
+        "status": "FAIL"
+      },
+      {
+        "node": "+Y",
+        "tmin_c": -36.7,
+        "tmax_c": -13.8,
+        "op_limits_c": [
+          -100,
+          110
+        ],
+        "margin_cold_c": 63.3,
+        "margin_hot_c": 123.8,
+        "status": "PASS"
+      },
+      {
+        "node": "-Y",
+        "tmin_c": -37.1,
+        "tmax_c": -22.7,
+        "op_limits_c": [
+          -100,
+          110
+        ],
+        "margin_cold_c": 62.9,
+        "margin_hot_c": 132.7,
+        "status": "PASS"
+      },
+      {
+        "node": "+Z",
+        "tmin_c": -38.9,
+        "tmax_c": -0.9,
+        "op_limits_c": [
+          -100,
+          110
+        ],
+        "margin_cold_c": 61.1,
+        "margin_hot_c": 110.9,
+        "status": "PASS"
+      }
+    ],
+    "closure_pct": 0.0,
+    "orbits": 5
+  },
+  "heater_baseline": {
+    "node": "Battery",
+    "case": "cold",
+    "target_c": 5.0,
+    "required_w": 5.25,
+    "installed_w": 7.6,
+    "duty_with_thermostat": 0.693,
+    "tmin_with_thermostat_c": 5.01,
+    "heater_energy_wh_per_orbit": 8.386
+  },
+  "heater_isolated": {
+    "node": "Battery",
+    "case": "cold",
+    "target_c": 5.0,
+    "required_w": 1.21,
+    "installed_w": 1.8,
+    "duty_with_thermostat": 0.7,
+    "tmin_with_thermostat_c": 5.0,
+    "heater_energy_wh_per_orbit": 2.006
+  },
+  "hot_isolated_heater": {
+    "margins": [
+      {
+        "node": "Battery",
+        "tmin_c": 17.4,
+        "tmax_c": 20.5,
+        "op_limits_c": [
+          0,
+          45
+        ],
+        "margin_cold_c": 17.4,
+        "margin_hot_c": 24.5,
+        "status": "PASS"
+      },
+      {
+        "node": "Avionics",
+        "tmin_c": 3.9,
+        "tmax_c": 24.1,
+        "op_limits_c": [
+          -20,
+          60
+        ],
+        "margin_cold_c": 23.9,
+        "margin_hot_c": 35.9,
+        "status": "PASS"
+      },
+      {
+        "node": "Payload",
+        "tmin_c": 1.5,
+        "tmax_c": 19.5,
+        "op_limits_c": [
+          -10,
+          40
+        ],
+        "margin_cold_c": 11.5,
+        "margin_hot_c": 20.5,
+        "status": "PASS"
+      },
+      {
+        "node": "+Y",
+        "tmin_c": -10.4,
+        "tmax_c": 29.1,
+        "op_limits_c": [
+          -100,
+          110
+        ],
+        "margin_cold_c": 89.6,
+        "margin_hot_c": 80.9,
+        "status": "PASS"
+      },
+      {
+        "node": "-Y",
+        "tmin_c": -10.8,
+        "tmax_c": 12.2,
+        "op_limits_c": [
+          -100,
+          110
+        ],
+        "margin_cold_c": 89.2,
+        "margin_hot_c": 97.8,
+        "status": "PASS"
+      },
+      {
+        "node": "+Z",
+        "tmin_c": -13.1,
+        "tmax_c": 41.1,
+        "op_limits_c": [
+          -100,
+          110
+        ],
+        "margin_cold_c": 86.9,
+        "margin_hot_c": 68.9,
+        "status": "PASS"
+      }
+    ],
+    "heater_duty": {
+      "battery_heater": 0.0
+    }
+  },
+  "cold_isolated_heater": {
+    "margins": [
+      {
+        "node": "Battery",
+        "tmin_c": 5.0,
+        "tmax_c": 10.0,
+        "op_limits_c": [
+          0,
+          45
+        ],
+        "margin_cold_c": 5.0,
+        "margin_hot_c": 35.0,
+        "status": "PASS"
+      },
+      {
+        "node": "Avionics",
+        "tmin_c": -26.1,
+        "tmax_c": -12.8,
+        "op_limits_c": [
+          -20,
+          60
+        ],
+        "margin_cold_c": -6.1,
+        "margin_hot_c": 72.8,
+        "status": "FAIL"
+      },
+      {
+        "node": "Payload",
+        "tmin_c": -28.0,
+        "tmax_c": -16.0,
+        "op_limits_c": [
+          -10,
+          40
+        ],
+        "margin_cold_c": -18.0,
+        "margin_hot_c": 56.0,
+        "status": "FAIL"
+      },
+      {
+        "node": "+Y",
+        "tmin_c": -34.4,
+        "tmax_c": -10.7,
+        "op_limits_c": [
+          -100,
+          110
+        ],
+        "margin_cold_c": 65.6,
+        "margin_hot_c": 120.7,
+        "status": "PASS"
+      },
+      {
+        "node": "-Y",
+        "tmin_c": -34.8,
+        "tmax_c": -19.6,
+        "op_limits_c": [
+          -100,
+          110
+        ],
+        "margin_cold_c": 65.2,
+        "margin_hot_c": 129.6,
+        "status": "PASS"
+      },
+      {
+        "node": "+Z",
+        "tmin_c": -36.6,
+        "tmax_c": 1.9,
+        "op_limits_c": [
+          -100,
+          110
+        ],
+        "margin_cold_c": 63.4,
+        "margin_hot_c": 108.1,
+        "status": "PASS"
+      }
+    ],
+    "heater_duty": {
+      "battery_heater": 0.7000799291159582
+    }
+  },
+  "beta_sweep_hot": [
+    {
+      "beta_deg": 0.0,
+      "Battery_min": -7.63,
+      "Avionics_min": -7.17,
+      "Payload_min": -9.29,
+      "+Y_min": -19.33,
+      "-Y_min": -19.33,
+      "+Z_min": -21.57,
+      "Battery_max": 2.82,
+      "Avionics_max": 9.1,
+      "Payload_max": 5.52,
+      "+Y_max": -0.23,
+      "-Y_max": -0.23,
+      "+Z_max": 32.94
+    },
+    {
+      "beta_deg": 10.0,
+      "Battery_min": -1.62,
+      "Avionics_min": -1.44,
+      "Payload_min": -3.78,
+      "+Y_min": -14.38,
+      "-Y_min": -14.79,
+      "+Z_min": -17.03,
+      "Battery_max": 9.93,
+      "Avionics_max": 16.32,
+      "Payload_max": 12.28,
+      "+Y_max": 13.28,
+      "-Y_max": 5.82,
+      "+Z_max": 37.97
+    },
+    {
+      "beta_deg": 20.0,
+      "Battery_min": 3.21,
+      "Avionics_min": 3.14,
+      "Payload_min": 0.66,
+      "+Y_min": -10.85,
+      "-Y_min": -11.28,
+      "+Z_min": -13.51,
+      "Battery_max": 15.47,
+      "Avionics_max": 21.85,
+      "Payload_max": 17.43,
+      "+Y_max": 24.77,
+      "-Y_max": 10.28,
+      "+Z_max": 40.51
+    },
+    {
+      "beta_deg": 30.0,
+      "Battery_min": 7.12,
+      "Avionics_min": 6.87,
+      "Payload_min": 4.3,
+      "+Y_min": -8.04,
+      "-Y_min": -8.45,
+      "+Z_min": -10.67,
+      "Battery_max": 19.65,
+      "Avionics_max": 25.88,
+      "Payload_max": 21.21,
+      "+Y_max": 34.27,
+      "-Y_max": 13.34,
+      "+Z_max": 40.78
+    },
+    {
+      "beta_deg": 40.0,
+      "Battery_min": 10.42,
+      "Avionics_min": 10.04,
+      "Payload_min": 7.49,
+      "+Y_min": -5.56,
+      "-Y_min": -6.01,
+      "+Z_min": -8.22,
+      "Battery_max": 22.68,
+      "Avionics_max": 28.62,
+      "Payload_max": 23.9,
+      "+Y_max": 41.87,
+      "-Y_max": 15.2,
+      "+Z_max": 39.07
+    },
+    {
+      "beta_deg": 50.0,
+      "Battery_min": 13.79,
+      "Avionics_min": 13.41,
+      "Payload_min": 10.93,
+      "+Y_min": -2.91,
+      "-Y_min": -3.37,
+      "+Z_min": -5.57,
+      "Battery_max": 25.02,
+      "Avionics_max": 30.48,
+      "Payload_max": 25.81,
+      "+Y_max": 47.81,
+      "-Y_max": 16.24,
+      "+Z_max": 35.87
+    },
+    {
+      "beta_deg": 60.0,
+      "Battery_min": 18.98,
+      "Avionics_min": 19.03,
+      "Payload_min": 16.54,
+      "+Y_min": 1.76,
+      "-Y_min": 1.16,
+      "+Z_min": -1.02,
+      "Battery_max": 27.68,
+      "Avionics_max": 32.45,
+      "Payload_max": 27.86,
+      "+Y_max": 52.79,
+      "-Y_max": 17.32,
+      "+Z_max": 32.24
+    },
+    {
+      "beta_deg": 70.0,
+      "Battery_min": 32.04,
+      "Avionics_min": 34.56,
+      "Payload_min": 30.05,
+      "+Y_min": 55.34,
+      "-Y_min": 16.96,
+      "+Z_min": 14.95,
+      "Battery_max": 34.23,
+      "Avionics_max": 38.03,
+      "Payload_max": 32.79,
+      "+Y_max": 59.39,
+      "-Y_max": 21.32,
+      "+Z_max": 31.49
+    },
+    {
+      "beta_deg": 80.0,
+      "Battery_min": 28.51,
+      "Avionics_min": 31.27,
+      "Payload_min": 26.52,
+      "+Y_min": 54.62,
+      "-Y_min": 14.26,
+      "+Z_min": 12.19,
+      "Battery_max": 29.64,
+      "Avionics_max": 33.05,
+      "Payload_max": 27.93,
+      "+Y_max": 56.71,
+      "-Y_max": 16.51,
+      "+Z_max": 20.7
+    },
+    {
+      "beta_deg": 90.0,
+      "Battery_min": 23.22,
+      "Avionics_min": 26.22,
+      "Payload_min": 21.32,
+      "+Y_min": 51.37,
+      "-Y_min": 10.09,
+      "+Z_min": 7.94,
+      "Battery_max": 23.22,
+      "Avionics_max": 26.22,
+      "Payload_max": 21.32,
+      "+Y_max": 51.37,
+      "-Y_max": 10.09,
+      "+Z_max": 7.94
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+# 3U CubeSat thermal model, v0.1
+# Sources are cited per value; see docs/SPEC.md for the full specification.
+# Units: SI (m, kg, J, W, K). Temperatures in limits / thermostat in degC.
+
+name: 3U CubeSat, nadir-pointing, SSO 550 km (LTDN 10:30)
+
+orbit:
+  altitude_km: 550
+  ltdn_hours: 10.5          # local time of descending node; beta range 17.2-23.7 deg over the year
+  # Attitude: LVLH, -Z nadir, +X along velocity, +Y orbit normal
+
+# Thermo-optical properties of single coatings (BOL / EOL alpha, IR emissivity)
+coatings:
+  solar_cell:     {alpha_bol: 0.91, alpha_eol: 0.91, eps: 0.85, eta: 0.28}   # triple-junction GaAs
+  anodized_al:    {alpha_bol: 0.40, alpha_eol: 0.45, eps: 0.76}
+  white_paint:    {alpha_bol: 0.20, alpha_eol: 0.40, eps: 0.90}              # NS43G alpha ~0.26 (Peabody 2022, p.60)
+  aperture:       {alpha_bol: 0.90, alpha_eol: 0.90, eps: 0.90}              # camera cavity, near black body
+
+# Nodes: C = thermal capacitance [J/K]. External nodes carry a face, area and coating mix.
+nodes:
+  +X:       {C: 48,   face: +X, area: 0.010, coatings: {anodized_al: 1.0}}
+  -X:       {C: 48,   face: -X, area: 0.010, coatings: {anodized_al: 1.0}}
+  +Y:       {C: 135,  face: +Y, area: 0.034, coatings: {solar_cell: 0.75, anodized_al: 0.25}}
+  -Y:       {C: 135,  face: -Y, area: 0.034, coatings: {solar_cell: 0.75, anodized_al: 0.25}}
+  +Z:       {C: 135,  face: +Z, area: 0.034, coatings: {solar_cell: 0.75, anodized_al: 0.25}}
+  -Z:       {C: 90,   face: -Z, area: 0.034, coatings: {white_paint: 0.82, aperture: 0.18}}
+  Frame:    {C: 538}
+  Battery:  {C: 350}
+  Avionics: {C: 300}
+  Payload:  {C: 1075}
+
+# Linear conductors G [W/K] = h * A (NASA PTC Guidebook v3.1, p.67-68 contact ranges)
+conductors:
+  - [+Y, Frame, 0.75]
+  - [-Y, Frame, 0.75]
+  - [+Z, Frame, 0.75]
+  - [-Z, Frame, 0.75]
+  - [+X, Frame, 0.30]
+  - [-X, Frame, 0.30]
+  - [Battery, Frame, 0.25]     # design option: 0.05 W/K with insulating washers
+  - [Avionics, Frame, 0.50]
+  - [Payload, Frame, 1.00]
+  - [Payload, -Z, 0.80]
+
+internal_radiation: false      # decision 2026-11-10: not included in v1
+
+# Design cases (Peabody 2022: environment p.31-33, hot/cold biasing p.110)
+cases:
+  hot:
+    beta_deg: 23.7
+    solar: 1420
+    albedo: 0.35
+    olr: 265
+    optics: eol_not_converting
+    dissipation: {Avionics: 2.5, Payload: 3.0, Battery: 0.5}
+  cold:
+    beta_deg: 17.2
+    solar: 1316
+    albedo: 0.25
+    olr: 208
+    optics: bol_converting
+    dissipation: {Avionics: 1.2, Payload: 0.0, Battery: 0.2}
+
+# Component limits [degC]; acceptance uses +/-5 degC analysis uncertainty
+# (NASA PTC Guidebook v3.1, p.39; Peabody 2022, p.134)
+limits:
+  Battery:  {op: [0, 45],    surv: [-20, 60]}
+  Avionics: {op: [-20, 60],  surv: [-40, 85]}
+  Payload:  {op: [-10, 40],  surv: [-30, 60]}
+  +Y:       {op: [-100, 110], surv: [-120, 125]}
+  -Y:       {op: [-100, 110], surv: [-120, 125]}
+  +Z:       {op: [-100, 110], surv: [-120, 125]}
+uncertainty_c: 5.0
+
+# Thermostatically controlled heater (NASA PTC Guidebook v3.1, p.120: 5 degC band)
+heaters:
+  battery_heater: {node: Battery, power_w: 0.0, on_c: 5.0, off_c: 10.0, max_duty: 0.70}
