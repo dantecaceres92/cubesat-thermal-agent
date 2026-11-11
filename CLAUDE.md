@@ -36,6 +36,7 @@ Create `src/cubesat_thermal/server.py` with MCPServer (`mcp>=2` package, `from m
 Also expose `model.yaml` as a read-only MCP resource and add a prompt `worst_case_analysis`.
 The server `instructions` must include: "Mark any statement that does not come from a tool result as an estimate outside the model."
 Every run reports both `closure_pct` (energy conservation) and `periodicity_pct` (|dU|/E_in over the last orbit).
+Every run reports `status`: `periodic` | `quasi_periodic` (thermostat limit cycle, converged over 10-orbit windows; Tmin/Tmax are the window envelope and heater duty is the window mean, with `window_orbits` and `window_periodicity_pct`) | `not_converged`. The first two are valid results.
 Register the server in Claude Code with `claude mcp add cubesat-thermal -- uv run --directory <repo> python -m cubesat_thermal.server`.
 
 ## Known limits (v0.1)

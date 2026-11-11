@@ -13,8 +13,8 @@ The goal is an agent that works like a thermal engineer during preliminary desig
 - **Orbit:** circular sun-synchronous orbit at 550 km, LTDN 10:30. Over a year, β varies between 17.2° and 23.7°
 - **Environment:** direct solar, albedo and Earth IR on every face, cylindrical eclipse, flat-plate view factors to Earth
 - **Cases:** hot (EOL optics, cells not converting, high environment and dissipation) and cold (BOL, cells converting, low environment and dissipation), following the GSFC biasing practice
-- **Control:** thermostatically controlled battery heater (5 °C to 10 °C band) solved with event detection
-- **Acceptance:** predicted temperature ± 5 °C must stay inside operating limits, and heaters must run at 70 % duty or less
+- **Control:** thermostatically controlled battery heater (5 °C to 10 °C band) solved with event detection. When the thermostat cycle does not repeat every orbit, the run converges over 10-orbit windows (quasi-periodic) and reports the window envelope
+- **Acceptance:** predicted temperature ± 5 °C must stay inside operating limits, and heaters are sized to run at 68 % duty or less (70 % maximum minus 2 points of margin)
 
 Everything is defined in [`model.yaml`](model.yaml), so a different spacecraft needs no code changes.
 
@@ -41,12 +41,12 @@ All checks run in `pytest` (`tests/test_validation.py`):
 
 The baseline design runs cold, which is common for small, high-emissivity spacecraft in a mid-morning orbit. The engine quantifies one fix for the battery:
 
-| Battery mount | Heater needed (cold case) | Installed at 70 % duty | Energy per orbit |
-|---|---|---|---|
-| Baseline, G = 0.25 W/K | 5.25 W | 7.6 W | 8.4 Wh |
-| Isolated, G = 0.05 W/K | 1.21 W | 1.8 W | 2.0 Wh (−76 %) |
+| Battery mount | Heater needed (cold case) | Installed | Thermostat duty | Energy per orbit | Convergence |
+|---|---|---|---|---|---|
+| Baseline, G = 0.25 W/K | 5.25 W | 7.6 W | 66.2 % (10-orbit mean) | 8.0 Wh | quasi-periodic |
+| Isolated, G = 0.05 W/K | 1.21 W | 1.9 W | 67.2 % | 2.0 Wh (−75 %) | periodic |
 
-With the isolated mount and the 1.8 W thermostat-controlled heater, the battery stays between 5 °C and 20.5 °C in both cases.
+With the isolated mount and the 1.9 W thermostat-controlled heater, the battery stays between 5 °C and 20.5 °C in both cases.
 
 ![Cold case, isolated battery with heater](results/temperatures_cold_isolated_heater.png)
 

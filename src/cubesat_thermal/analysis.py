@@ -33,9 +33,13 @@ def check_margins(model: ThermalModel, result: Result) -> list[dict]:
 
 # ---------------------------------------------------------------------- heater sizing
 def size_heater(model: ThermalModel, case: str = "cold", node: str = "Battery",
-                target_c: float | None = None, tol_w: float = 0.01) -> dict:
+                target_c: float | None = None, tol_w: float = 0.01,
+                duty_margin: float = 0.02, max_steps: int = 100) -> dict:
     """Constant heater power that keeps `node` at or above target (default: op min + uncertainty),
-    then installed power = required / max duty (70 %), verified with the thermostat."""
+    then installed power = required / max duty (70 %), verified with the thermostat. The
+    thermostat holds the node inside its deadband, above the sizing target, so it loses more
+    heat than the constant-power estimate: the installed power is raised in 0.1 W steps until
+    the thermostat duty is at most max_duty - duty_margin."""
     lo = model.limits[node]["op"][0]
     target = lo + model.uncertainty_c if target_c is None else target_c
     base = model.cases[case].dissipation.get(node, 0.0)
@@ -58,12 +62,25 @@ def size_heater(model: ThermalModel, case: str = "cold", node: str = "Battery",
     required = b
     max_duty = model.heaters[0].max_duty if model.heaters else 0.7
     installed = float(np.ceil(required / max_duty * 10) / 10)   # round up to 0.1 W
-    check = model.copy_with(heater_power=installed).run(case)
-    duty = next(iter(check.energy["heater_duty"].values()), 0.0)
+    duty_limit = max_duty - duty_margin
+    for _ in range(max_steps):
+        check = model.copy_with(heater_power=installed).run(case)
+        duty = float(next(iter(check.energy["heater_duty"].values()), 0.0))
+        if duty <= duty_limit:
+            break
+        installed = round(installed + 0.1, 1)
+    else:
+        raise RuntimeError(f"thermostat duty still above {duty_limit:.2f} at {installed} W")
     return {"node": node, "case": case, "target_c": target, "required_w": round(required, 2),
             "installed_w": installed, "duty_with_thermostat": round(duty, 3),
+            "duty_limit": round(duty_limit, 3), "status": check.status,
+            "converged": check.converged,
+            "periodicity_pct": round(check.energy["periodicity_pct"], 4),
+            "window_periodicity_pct": (None if check.window_periodicity_pct is None
+                                       else round(check.window_periodicity_pct, 4)),
             "tmin_with_thermostat_c": round(check.tmin(node), 2),
-            "heater_energy_wh_per_orbit": round(check.energy["heater_J"] / 3600, 3)}
+            # duty is the window mean in quasi-periodic mode, so use it rather than one orbit
+            "heater_energy_wh_per_orbit": round(duty * installed * check.period_s / 3600, 3)}
 
 
 # ---------------------------------------------------------------------- beta sweep

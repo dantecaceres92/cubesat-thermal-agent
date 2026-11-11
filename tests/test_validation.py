@@ -1,11 +1,11 @@
-"""Validation suite V1-V6 (docs/SPEC.md, section 10)."""
+"""Validation suite V1-V8 (docs/SPEC.md, section 10; V7-V8 added 2026-11-11)."""
 from pathlib import Path
 
 import numpy as np
 import pytest
 
 from cubesat_thermal import (ThermalModel, eclipse_fraction, period_s, radiator_area,
-                             radiator_heater)
+                             radiator_heater, size_heater)
 from cubesat_thermal.environment import Environment
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -78,3 +78,21 @@ def test_v6_time_step_independence(model, case):
     for node in model.nodes:
         assert abs(a.tmin(node) - b.tmin(node)) < 0.1
         assert abs(a.tmax(node) - b.tmax(node)) < 0.1
+
+
+def test_v7_thermostat_limit_cycle_is_quasi_periodic(model):
+    """Cold case, baseline battery mount, 7.7 W thermostatic heater: the thermostat cycle is
+    not commensurate with the orbit, so the run must converge in window mode (quasi_periodic)
+    with window periodicity < 0.1 % and the battery envelope inside the 5-10 degC deadband."""
+    r = model.copy_with(heater_power=7.7).run("cold")
+    assert r.status == "quasi_periodic"
+    assert r.converged
+    assert r.window_periodicity_pct < 0.1
+    assert 4.5 <= r.tmin("Battery") <= r.tmax("Battery") <= 10.5
+    assert r.energy["closure_pct"] < 0.5
+
+
+def test_v8_heater_duty_margin(model):
+    """size_heater leaves at least 2 points of duty margin below max_duty (70 %)."""
+    out = size_heater(model, case="cold", node="Battery")
+    assert out["duty_with_thermostat"] <= 0.68

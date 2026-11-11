@@ -67,8 +67,12 @@ mcp = MCPServer(
         "Orbital thermal analysis of a 3U CubeSat (nodal model, preliminary design). "
         "Temperatures are in degC. Every result carries its assumptions and the orbit "
         "energy-balance closure (energy conservation) and periodicity (|dU|/E_in, how well "
-        "the last orbit repeats): check both, and the converged flag, before trusting "
-        "temperatures. Design changes are made with modify_design, which stores a named "
+        "the last orbit repeats): check both, and the status, before trusting temperatures. "
+        "status is 'periodic', 'quasi_periodic' or 'not_converged'. A quasi_periodic result "
+        "is valid: a thermostat limit cycle does not repeat every orbit, so the run is "
+        "converged over windows of orbits (window_periodicity_pct), Tmin/Tmax are the "
+        "envelope of the last window and heater duty is the window mean; report it as an "
+        "envelope. Only not_converged results must not be trusted. Design changes are made with modify_design, which stores a named "
         "variant; the baseline model is never changed. Mark any statement that does not "
         "come from a tool result as an estimate outside the model."
     ),
@@ -171,7 +175,12 @@ def _closure(r: Result) -> dict[str, Any]:
     return {"closure_pct": round(e["closure_pct"], 4),
             "periodicity_pct": round(e["periodicity_pct"], 4), "in_J": _r(e["in_J"], 1),
             "out_J": _r(e["out_J"], 1), "dU_J": _r(e["dU_J"], 1),
-            "orbits_to_converge": r.orbits, "converged": r.converged}
+            "status": r.status, "converged": r.converged, "orbits": r.orbits,
+            "window_orbits": r.window_orbits,
+            "window_periodicity_pct": (None if r.window_periodicity_pct is None
+                                       else round(r.window_periodicity_pct, 4)),
+            "temperatures_are": ("envelope of the last window" if r.T_env
+                                 else "min/max of the last orbit")}
 
 
 def _out(name: str) -> Path:
@@ -247,7 +256,7 @@ def run_case(case: str, beta_deg: float | None = None,
              overrides: dict[str, Any] | None = None,
              variant: str | None = None) -> dict[str, Any]:
     """Run a design case (e.g. 'hot', 'cold') to a periodic orbit and report min/max
-    temperature per node [degC], orbits to converge and energy-balance closure.
+    temperature per node [degC], convergence status and energy-balance closure.
     beta_deg replaces the case beta angle. overrides may set solar [W/m2], albedo [-],
     olr [W/m2] or optics ('eol_not_converting' | 'bol_converting')."""
     vname, m, r = _run(variant, case, beta_deg, overrides)
@@ -474,8 +483,12 @@ def generate_report(cases: list[str], variant: str | None = None) -> dict[str, A
               f"OLR {cs.olr:g} W/m2, optics `{cs.optics}`, dissipation {cs.dissipation} W.", "",
               f"Energy balance: closure **{e['closure_pct']:.4f} %**, periodicity "
               f"**{e['periodicity_pct']:.4f} %** (in {e['in_J']:.0f} J, out {e['out_J']:.0f} J, "
-              f"dU {e['dU_J']:.1f} J), {r.orbits} orbits"
-              f"{' to converge' if r.converged else ' (NOT converged)'}.", "",
+              f"dU {e['dU_J']:.1f} J). Status **{r.status}** after {r.orbits} orbits"
+              + (f"; window of {r.window_orbits} orbits, window periodicity "
+                 f"**{r.window_periodicity_pct:.4f} %**, temperatures are the window envelope "
+                 "and heater duty is the window mean" if r.window_orbits else "")
+              + ("" if r.converged else " (NOT converged: do not use these temperatures)")
+              + ".", "",
               "| Node | Tmin [degC] | Tmax [degC] | Op limits [degC] | Cold margin | "
               "Hot margin | Status |",
               "|---|---|---|---|---|---|---|"]
@@ -509,8 +522,9 @@ def worst_case_analysis(variant: str = BASELINE) -> str:
 
 1. Call describe_model to state the model, design cases and limits.
 2. Run the hot and cold cases with run_case. Before using any temperature, check that the
-   energy-balance closure is below 0.1 %, that periodicity is below 0.01 % and that the run
-   converged.
+   energy-balance closure is below 0.1 % and the status. 'periodic' needs periodicity below
+   0.01 %; 'quasi_periodic' (thermostat limit cycle) is valid and its temperatures are the
+   window envelope; 'not_converged' must not be used.
 3. Call check_margins for both cases and list every WATCH or FAIL node with its margin.
 4. Call beta_sweep on the hot case over the SSO beta range from orbit_info (and 0-90 deg)
    to confirm that the design-case beta is really the worst case.

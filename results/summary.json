@@ -122,7 +122,7 @@
       }
     ],
     "closure_pct": 0.0,
-    "orbits": 5
+    "orbits": 6
   },
   "cold": {
     "temperatures_c": {
@@ -132,7 +132,7 @@
       ],
       "-X": [
         -35.71,
-        -7.18
+        -7.17
       ],
       "+Y": [
         -36.7,
@@ -151,7 +151,7 @@
         -17.69
       ],
       "Frame": [
-        -32.88,
+        -32.87,
         -17.3
       ],
       "Battery": [
@@ -159,12 +159,12 @@
         -20.14
       ],
       "Avionics": [
-        -28.77,
+        -28.76,
         -16.35
       ],
       "Payload": [
         -30.54,
-        -19.36
+        -19.35
       ]
     },
     "margins": [
@@ -242,7 +242,7 @@
       }
     ],
     "closure_pct": 0.0,
-    "orbits": 5
+    "orbits": 6
   },
   "heater_baseline": {
     "node": "Battery",
@@ -250,19 +250,29 @@
     "target_c": 5.0,
     "required_w": 5.25,
     "installed_w": 7.6,
-    "duty_with_thermostat": 0.693,
-    "tmin_with_thermostat_c": 5.01,
-    "heater_energy_wh_per_orbit": 8.386
+    "duty_with_thermostat": 0.662,
+    "duty_limit": 0.68,
+    "status": "quasi_periodic",
+    "converged": true,
+    "periodicity_pct": 0.6304,
+    "window_periodicity_pct": 0.0168,
+    "tmin_with_thermostat_c": 5.0,
+    "heater_energy_wh_per_orbit": 8.014
   },
   "heater_isolated": {
     "node": "Battery",
     "case": "cold",
     "target_c": 5.0,
     "required_w": 1.21,
-    "installed_w": 1.8,
-    "duty_with_thermostat": 0.7,
+    "installed_w": 1.9,
+    "duty_with_thermostat": 0.672,
+    "duty_limit": 0.68,
+    "status": "periodic",
+    "converged": true,
+    "periodicity_pct": 0.0014,
+    "window_periodicity_pct": null,
     "tmin_with_thermostat_c": 5.0,
-    "heater_energy_wh_per_orbit": 2.006
+    "heater_energy_wh_per_orbit": 2.031
   },
   "hot_isolated_heater": {
     "margins": [
@@ -371,55 +381,55 @@
       },
       {
         "node": "Payload",
-        "tmin_c": -28.0,
+        "tmin_c": -27.9,
         "tmax_c": -16.0,
         "op_limits_c": [
           -10,
           40
         ],
-        "margin_cold_c": -18.0,
+        "margin_cold_c": -17.9,
         "margin_hot_c": 56.0,
         "status": "FAIL"
       },
       {
         "node": "+Y",
-        "tmin_c": -34.4,
+        "tmin_c": -34.3,
         "tmax_c": -10.7,
         "op_limits_c": [
           -100,
           110
         ],
-        "margin_cold_c": 65.6,
+        "margin_cold_c": 65.7,
         "margin_hot_c": 120.7,
         "status": "PASS"
       },
       {
         "node": "-Y",
-        "tmin_c": -34.8,
-        "tmax_c": -19.6,
+        "tmin_c": -34.7,
+        "tmax_c": -19.5,
         "op_limits_c": [
           -100,
           110
         ],
-        "margin_cold_c": 65.2,
-        "margin_hot_c": 129.6,
+        "margin_cold_c": 65.3,
+        "margin_hot_c": 129.5,
         "status": "PASS"
       },
       {
         "node": "+Z",
-        "tmin_c": -36.6,
-        "tmax_c": 1.9,
+        "tmin_c": -36.5,
+        "tmax_c": 2.0,
         "op_limits_c": [
           -100,
           110
         ],
-        "margin_cold_c": 63.4,
-        "margin_hot_c": 108.1,
+        "margin_cold_c": 63.5,
+        "margin_hot_c": 108.0,
         "status": "PASS"
       }
     ],
     "heater_duty": {
-      "battery_heater": 0.7000799291159582
+      "battery_heater": 0.6716600052164899
     }
   },
   "beta_sweep_hot": [
@@ -428,8 +438,8 @@
       "Battery_min": -7.63,
       "Avionics_min": -7.17,
       "Payload_min": -9.29,
-      "+Y_min": -19.33,
-      "-Y_min": -19.33,
+      "+Y_min": -19.32,
+      "-Y_min": -19.32,
       "+Z_min": -21.57,
       "Battery_max": 2.82,
       "Avionics_max": 9.1,
@@ -451,7 +461,7 @@
       "Payload_max": 12.28,
       "+Y_max": 13.28,
       "-Y_max": 5.82,
-      "+Z_max": 37.97
+      "+Z_max": 37.98
     },
     {
       "beta_deg": 20.0,
@@ -479,7 +489,7 @@
       "Battery_max": 19.65,
       "Avionics_max": 25.88,
       "Payload_max": 21.21,
-      "+Y_max": 34.27,
+      "+Y_max": 34.28,
       "-Y_max": 13.34,
       "+Z_max": 40.78
     },
@@ -553,7 +563,7 @@
       "+Z_min": 12.19,
       "Battery_max": 29.64,
       "Avionics_max": 33.05,
-      "Payload_max": 27.93,
+      "Payload_max": 27.94,
       "+Y_max": 56.71,
       "-Y_max": 16.51,
       "+Z_max": 20.7

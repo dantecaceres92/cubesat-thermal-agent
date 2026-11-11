@@ -48,19 +48,26 @@ class Result:
     case: Case
     nodes: list[str]
     period_s: float
-    t: np.ndarray                     # [s], last (periodic) orbit
-    T: dict[str, np.ndarray]          # [degC]
+    t: np.ndarray                     # [s], last orbit
+    T: dict[str, np.ndarray]          # [degC], last orbit
     eclipse: np.ndarray               # bool per sample
     heater_on: np.ndarray             # bool per sample (first heater)
-    energy: dict                      # orbit-integrated energy balance [J] and averages [W]
-    orbits: int
-    converged: bool
+    energy: dict                      # last-orbit energy balance [J] and averages [W]
+    orbits: int                       # total orbits integrated
+    status: str                       # "periodic" | "quasi_periodic" | "not_converged"
+    window_orbits: int | None = None          # orbits per window (window mode only)
+    window_periodicity_pct: float | None = None   # |sum dU| / sum E_in over the last window
+    T_env: dict[str, tuple[float, float]] | None = None   # last-window envelope [degC]
+
+    @property
+    def converged(self) -> bool:
+        return self.status in ("periodic", "quasi_periodic")
 
     def tmin(self, node: str) -> float:
-        return float(self.T[node].min())
+        return self.T_env[node][0] if self.T_env else float(self.T[node].min())
 
     def tmax(self, node: str) -> float:
-        return float(self.T[node].max())
+        return self.T_env[node][1] if self.T_env else float(self.T[node].max())
 
     def summary(self) -> dict:
         return {n: (round(self.tmin(n), 2), round(self.tmax(n), 2)) for n in self.nodes}
@@ -163,7 +170,19 @@ class ThermalModel:
 
     # ------------------------------------------------------------------ solution
     def run(self, case: Case | str, max_orbits: int = 40, tol_k: float = 0.01,
+            tol_periodicity: float = 1e-4, window_orbits: int = 10, max_windows: int = 6,
+            tol_window_periodicity: float = 1e-3, tol_envelope_k: float = 0.1,
             n_out: int = 721, rtol: float = 1e-7, atol: float = 1e-6) -> Result:
+        """Integrate orbits until the response repeats.
+
+        periodic: per orbit, |dU|/E_in < tol_periodicity and every orbit-mean node temperature
+        changes < tol_k between consecutive orbits.
+        quasi_periodic: if that fails while a heater is active (thermostat limit cycle not
+        commensurate with the orbit), integrate windows of window_orbits orbits until
+        |sum dU|/sum E_in < tol_window_periodicity over a window and the per-node envelope
+        (min and max over the window) changes < tol_envelope_k between consecutive windows.
+        Tmin/Tmax are then the last-window envelope and the heater duty is the window mean.
+        """
         case = self.cases[case] if isinstance(case, str) else case
         P = period_s(self.altitude_m)
         theta, Qtab, parts, ecl_tab, eps_vec, area = self.env_table(case)
@@ -195,10 +214,18 @@ class ThermalModel:
         T = sol0.x
         state = [T[h_idx[k]] - K0 < h.on_c for k, h in enumerate(heaters)]
 
+        e_env_orbit = float(np.trapezoid(Qtab.sum(axis=0), ttab))   # periodic environment [J]
+
         def integrate_orbit(T0, state0, t0, record=False):
-            """Integrate one orbit with thermostat events. Returns end state and segments."""
+            """Integrate one orbit with thermostat events. Returns end state, segments,
+            the orbit integral of T per node [K s], heater on-time per heater [s] and the
+            orbit min/max per node [K] (solver steps include the thermostat switch points)."""
             t, T, st = t0, T0.copy(), list(state0)
             segs = []
+            T_int = np.zeros(n)
+            on_time = np.zeros(len(heaters))
+            T_lo = T0.copy()
+            T_hi = T0.copy()
             t_end = t0 + P
             while t < t_end - 1e-9:
                 events = []
@@ -214,25 +241,71 @@ class ThermalModel:
                               max_step=P / 360, events=events or None, dense_output=record)
                 if record:
                     segs.append((s.t[0], s.t[-1], s.sol, list(st)))
+                T_int += np.trapezoid(s.y, s.t, axis=1)
+                on_time += np.array(st, dtype=float) * (s.t[-1] - s.t[0])
+                T_lo = np.minimum(T_lo, s.y.min(axis=1))
+                T_hi = np.maximum(T_hi, s.y.max(axis=1))
                 t, T = s.t[-1], s.y[:, -1]
                 if s.status == 1:
                     for k, te in enumerate(s.t_events):
                         if len(te):
                             st[k] = not st[k]
-            return T, st, segs
+            return T, st, segs, T_int, on_time, T_lo, T_hi
 
-        converged, orbits = False, 0
+        def e_in_orbit(on):
+            return e_env_orbit + q_diss.sum() * P + float(on @ h_pow)
+
+        # Per-orbit periodicity: converge on the stored-energy change per orbit |dU|/E_in and
+        # on the orbit-mean node temperatures (the orbit-start temperature never repeats when a
+        # thermostat switches at a different phase each orbit).
+        status, orbits = "not_converged", 0
         t0 = 0.0
+        mean_prev = None
+        heater_active = False
         for orbits in range(1, max_orbits + 1):
-            T_new, state, _ = integrate_orbit(T, state, t0)
+            T_new, state, _, T_int, on, _, _ = integrate_orbit(T, state, t0)
             t0 += P
-            dT = np.max(np.abs(T_new - T))
+            mean = T_int / P
+            periodicity = abs(float(self.C @ (T_new - T))) / e_in_orbit(on)
+            heater_active = heater_active or bool(on.sum() > 0)   # switched on in any orbit
             T = T_new
-            if dT < tol_k:
-                converged = True
+            if (mean_prev is not None and periodicity < tol_periodicity
+                    and np.max(np.abs(mean - mean_prev)) < tol_k):
+                status = "periodic"
                 break
-        T_start, state_start = T.copy(), list(state)
-        T_end, _, segs = integrate_orbit(T, state, t0, record=True)
+            mean_prev = mean
+
+        # Window mode: thermostat limit cycle, quasi-periodic response.
+        win = None
+        if status != "periodic" and heater_active:
+            env_prev = None
+            for _ in range(max_windows):
+                T_w0 = T.copy()
+                e_in_w, on_w = 0.0, np.zeros(len(heaters))
+                lo_w, hi_w = np.full(n, np.inf), np.full(n, -np.inf)
+                for _ in range(window_orbits):
+                    T_start, state_start, t_start = T.copy(), list(state), t0
+                    T, state, segs, _, on, lo, hi = integrate_orbit(T, state, t0, record=True)
+                    t0 += P
+                    orbits += 1
+                    e_in_w += e_in_orbit(on)
+                    on_w += on
+                    lo_w, hi_w = np.minimum(lo_w, lo), np.maximum(hi_w, hi)
+                w_per = abs(float(self.C @ (T - T_w0))) / e_in_w
+                env_change = (np.inf if env_prev is None else
+                              max(np.max(np.abs(lo_w - env_prev[0])),
+                                  np.max(np.abs(hi_w - env_prev[1]))))
+                win = {"periodicity": w_per, "lo": lo_w, "hi": hi_w,
+                       "duty": on_w / (window_orbits * P)}
+                if w_per < tol_window_periodicity and env_change < tol_envelope_k:
+                    status = "quasi_periodic"
+                    break
+                env_prev = (lo_w, hi_w)
+            T_end = T
+            t0 = t_start          # the last orbit of the last window is the recorded one
+        else:
+            T_start, state_start = T.copy(), list(state)
+            T_end, _, segs, _, _, _, _ = integrate_orbit(T, state, t0, record=True)
 
         # sample the recorded orbit
         def sample(tt):
@@ -270,12 +343,21 @@ class ThermalModel:
         energy = {
             "absorbed_J": e_abs, "emitted_J": e_emit, "dissipated_J": e_diss, "heater_J": e_heat,
             "in_J": e_in, "out_J": e_out, "dU_J": dU,
-            "closure_pct": abs(e_in - e_out - dU) / e_in * 100.0,
-            "heater_duty": {h.name: on_time[k] / P for k, h in enumerate(heaters)},
+            "closure_pct": abs(e_in - e_out - dU) / e_in * 100.0,      # energy conservation
+            "periodicity_pct": abs(dU) / e_in * 100.0,                  # orbit-to-orbit repeat
+            "heater_duty": {h.name: float(win["duty"][k] if win else on_time[k] / P)
+                            for k, h in enumerate(heaters)},     # window mean in window mode
             "absorbed_avg_W": {nd: sum(v.values()) / P for nd, v in e_abs.items()},
             "emitted_avg_W": {nd: v / P for nd, v in e_emit.items()},
         }
         ecl = np.interp((t_out - t0), ttab, ecl_tab.astype(float)) > 0.5
-        return Result(case=case, nodes=self.nodes, period_s=P, t=t_out - t0,
+        T_env = None
+        if win:
+            T_env = {nd: (float(win["lo"][self.idx[nd]] - K0), float(win["hi"][self.idx[nd]] - K0))
+                     for nd in self.nodes}
+        return Result(case=case, nodes=self.nodes, period_s=float(P), t=t_out - t0,
                       T={nd: Y[self.idx[nd]] - K0 for nd in self.nodes}, eclipse=ecl,
-                      heater_on=H, energy=energy, orbits=orbits, converged=converged)
+                      heater_on=H, energy=energy, orbits=orbits, status=status,
+                      window_orbits=window_orbits if win else None,
+                      window_periodicity_pct=float(win["periodicity"] * 100.0) if win else None,
+                      T_env=T_env)
