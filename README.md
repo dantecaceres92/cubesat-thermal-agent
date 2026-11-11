@@ -88,7 +88,7 @@ examples/run_cases.py       end-to-end run that produces results/
 
 ## Roadmap
 
-1. **MCP server** (FastMCP): `describe_model`, `orbit_info`, `run_case`, `energy_balance`, `check_margins`, `beta_sweep`, `size_heater`, `modify_design`, `plot`, `generate_report`
+1. **MCP server** (MCPServer): `describe_model`, `orbit_info`, `run_case`, `energy_balance`, `check_margins`, `beta_sweep`, `size_heater`, `modify_design`, `plot`, `generate_report`
 2. Agent demo in Claude Code and a technical report generator
 3. Power profiles over the orbit (imaging, downlink), deployable panels, internal radiation
 4. An agent that drives industrial tools (Thermal Desktop via OpenTD, Simcenter 3D via NXOpen) on detailed models

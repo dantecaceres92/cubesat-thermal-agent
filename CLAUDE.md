@@ -18,7 +18,7 @@ The owner is Dante Cáceres, a satellite thermal engineer (4 years: NX/Simcenter
 - Units are SI internally (K, W, J, m). Temperatures are reported in °C.
 
 ## Phase 2 – MCP server (next step)
-Create `src/cubesat_thermal/server.py` with FastMCP (`mcp` package, `from mcp.server.fastmcp import FastMCP`) and expose these tools:
+Create `src/cubesat_thermal/server.py` with MCPServer (`mcp>=2` package, `from mcp.server.mcpserver import MCPServer`; MCP Python SDK v2 renamed FastMCP to MCPServer) and expose these tools:
 
 | Tool | Engine call |
 |---|---|

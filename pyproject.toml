@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-mcp = ["mcp>=1.2"]          # phase 2: MCP server (FastMCP)
+mcp = ["mcp>=2"]            # phase 2: MCP server (MCPServer, SDK v2)
 
 [dependency-groups]
 dev = ["pytest>=8"]
