@@ -34,6 +34,8 @@ Create `src/cubesat_thermal/server.py` with MCPServer (`mcp>=2` package, `from m
 | `generate_report(cases)` | Markdown report with assumptions, results, margins, sources |
 
 Also expose `model.yaml` as a read-only MCP resource and add a prompt `worst_case_analysis`.
+The server `instructions` must include: "Mark any statement that does not come from a tool result as an estimate outside the model."
+Every run reports both `closure_pct` (energy conservation) and `periodicity_pct` (|dU|/E_in over the last orbit).
 Register the server in Claude Code with `claude mcp add cubesat-thermal -- uv run --directory <repo> python -m cubesat_thermal.server`.
 
 ## Known limits (v0.1)

@@ -66,9 +66,11 @@ mcp = MCPServer(
     instructions=(
         "Orbital thermal analysis of a 3U CubeSat (nodal model, preliminary design). "
         "Temperatures are in degC. Every result carries its assumptions and the orbit "
-        "energy-balance closure: check the closure before trusting temperatures. "
-        "Design changes are made with modify_design, which stores a named variant; the "
-        "baseline model is never changed."
+        "energy-balance closure (energy conservation) and periodicity (|dU|/E_in, how well "
+        "the last orbit repeats): check both, and the converged flag, before trusting "
+        "temperatures. Design changes are made with modify_design, which stores a named "
+        "variant; the baseline model is never changed. Mark any statement that does not "
+        "come from a tool result as an estimate outside the model."
     ),
     version=__version__,
 )
@@ -166,7 +168,8 @@ def _assumptions(vname: str, model: ThermalModel, case: Case) -> dict[str, Any]:
 
 def _closure(r: Result) -> dict[str, Any]:
     e = r.energy
-    return {"closure_pct": round(e["closure_pct"], 4), "in_J": _r(e["in_J"], 1),
+    return {"closure_pct": round(e["closure_pct"], 4),
+            "periodicity_pct": round(e["periodicity_pct"], 4), "in_J": _r(e["in_J"], 1),
             "out_J": _r(e["out_J"], 1), "dU_J": _r(e["dU_J"], 1),
             "orbits_to_converge": r.orbits, "converged": r.converged}
 
@@ -469,9 +472,10 @@ def generate_report(cases: list[str], variant: str | None = None) -> dict[str, A
         L += [f"## Case `{c}`", "",
               f"beta {cs.beta_deg:g} deg, solar {cs.solar:g} W/m2, albedo {cs.albedo:g}, "
               f"OLR {cs.olr:g} W/m2, optics `{cs.optics}`, dissipation {cs.dissipation} W.", "",
-              f"Energy balance: closure **{e['closure_pct']:.4f} %** (in {e['in_J']:.0f} J, "
-              f"out {e['out_J']:.0f} J, dU {e['dU_J']:.1f} J), {r.orbits} orbits to converge"
-              f"{'' if r.converged else ' (NOT converged)'}.", "",
+              f"Energy balance: closure **{e['closure_pct']:.4f} %**, periodicity "
+              f"**{e['periodicity_pct']:.4f} %** (in {e['in_J']:.0f} J, out {e['out_J']:.0f} J, "
+              f"dU {e['dU_J']:.1f} J), {r.orbits} orbits"
+              f"{' to converge' if r.converged else ' (NOT converged)'}.", "",
               "| Node | Tmin [degC] | Tmax [degC] | Op limits [degC] | Cold margin | "
               "Hot margin | Status |",
               "|---|---|---|---|---|---|---|"]
@@ -505,7 +509,8 @@ def worst_case_analysis(variant: str = BASELINE) -> str:
 
 1. Call describe_model to state the model, design cases and limits.
 2. Run the hot and cold cases with run_case. Before using any temperature, check that the
-   energy-balance closure is below 0.1 % and that the run converged.
+   energy-balance closure is below 0.1 %, that periodicity is below 0.01 % and that the run
+   converged.
 3. Call check_margins for both cases and list every WATCH or FAIL node with its margin.
 4. Call beta_sweep on the hot case over the SSO beta range from orbit_info (and 0-90 deg)
    to confirm that the design-case beta is really the worst case.

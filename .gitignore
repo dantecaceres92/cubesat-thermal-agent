@@ -7,3 +7,4 @@ build/
 *.egg-info/
 .DS_Store
 results/mcp/
+.claude/settings.local.json
