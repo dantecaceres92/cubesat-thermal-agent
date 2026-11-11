@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "cubesat-thermal": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "python", "-m", "cubesat_thermal.server"]
+    }
+  }
+}
